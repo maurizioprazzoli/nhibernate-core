@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+				   namespace="NHibernate.Test.NHSpecificTest.NH3837"
+				   assembly="NHibernate.Test">
+
+  <!--Begin Mapping of class Item-->
+  <class name="Item" lazy="false">
+    <cache usage="read-write"/>
+
+    <id name="Id">
+      <generator class="assigned" />
+    </id>
+
+    <version name="Version" column="Version" type="Int32" unsaved-value="0"/>
+
+    <property name="Description" />
+
+    <bag name="Bids" inverse="true" cascade="all" lazy="false">
+      <cache usage="read-write" />
+      <key column="idItem"></key>
+      <one-to-many class="Bid" />
+    </bag>
+
+  </class>
+  <!--End Mapping of class Item-->
+
+  <!--Begin Mapping of class Bid-->
+  <class name="Bid" lazy="false">
+    <cache usage="read-write"/>
+
+    <id name="Id" type="Guid">
+      <generator class="assigned"/>
+    </id>
+
+    <version name="Version" column="Version" type="Int32" unsaved-value="0"/>
+
+    <property name="Description" />
+
+    <many-to-one name="Item" column="idItem" class="Item" />
+
+  </class>
+  <!--End Mapping of class Bid-->
+
+</hibernate-mapping>
