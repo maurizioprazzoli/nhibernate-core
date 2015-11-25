@@ -4,11 +4,13 @@ using NHibernate.Util;
 
 namespace NHibernate.Bytecode
 {
-	public abstract class AbstractBytecodeProvider : IBytecodeProvider, IInjectableProxyFactoryFactory, IInjectableCollectionTypeFactoryClass
+    public abstract class AbstractBytecodeProvider : IBytecodeProvider, IInjectableProxyFactoryFactory, IInjectableCollectionTypeFactoryClass, IInjectableBytecodeProviderInterceptorClass
 	{
 		private readonly IObjectsFactory objectsFactory = new ActivatorObjectsFactory();
 		protected System.Type proxyFactoryFactory;
-		private ICollectionTypeFactory collectionTypeFactory;
+        protected IBytecodeProviderInterceptor bytecodeProviderInterceptor;
+        protected System.Type bytecodeProviderInterceptorClass = typeof(EmptyBytecodeProviderInterceptor);
+        private ICollectionTypeFactory collectionTypeFactory;
 		private System.Type collectionTypeFactoryClass = typeof(Type.DefaultCollectionTypeFactory);
 
 		#region IBytecodeProvider Members
@@ -59,6 +61,31 @@ namespace NHibernate.Bytecode
 			}
 		}
 
+        public virtual IBytecodeProviderInterceptor BytecodeProviderInterceptor
+        {
+            get
+            {
+                if (bytecodeProviderInterceptor == null)
+                {
+                    try
+                    {
+                        bytecodeProviderInterceptor =
+                        (IBytecodeProviderInterceptor)Activator.CreateInstance(bytecodeProviderInterceptorClass);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new HibernateByteCodeException("Failed to create an instance of '" + bytecodeProviderInterceptorClass.FullName + "'!", e);
+                    }
+                }
+                return bytecodeProviderInterceptor;
+            }
+            set
+            {
+                if (value == null)
+                    throw new HibernateByteCodeException("Failed to create an instance of bytecodeProviderInterceptor. Interceptor instance cannot be null.");
+                bytecodeProviderInterceptor = value;
+            }
+        }
 		#endregion
 
 		#region IInjectableProxyFactoryFactory Members
@@ -115,5 +142,35 @@ namespace NHibernate.Bytecode
 		}
 
 		#endregion
-	}
+
+        #region Implementation of IInjectableBytecodeProviderInterceptorClass
+        public void SetBytecodeProviderInterceptorClass(string typeAssemblyQualifiedName)
+        {
+            if (string.IsNullOrEmpty(typeAssemblyQualifiedName))
+            {
+                throw new ArgumentNullException("typeAssemblyQualifiedName");
+            }
+            System.Type ctf = ReflectHelper.ClassForName(typeAssemblyQualifiedName);
+            SetBytecodeProviderInterceptorClass(ctf);
+        }
+
+        public void SetBytecodeProviderInterceptorClass(System.Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+            if (typeof(IBytecodeProviderInterceptor).IsAssignableFrom(type) == false)
+            {
+                throw new HibernateByteCodeException(type.FullName + " does not implement " + typeof(IBytecodeProviderInterceptor).FullName);
+            }
+            if (bytecodeProviderInterceptor != null && !bytecodeProviderInterceptorClass.Equals(type))
+            {
+                throw new InvalidOperationException("BytecodeProviderInterceptor in use, can't change it.");
+            }
+            bytecodeProviderInterceptorClass = type;
+        }
+        #endregion
+
+    }
 }

@@ -4,19 +4,34 @@ namespace NHibernate.Bytecode
 {
 	public class ActivatorObjectsFactory: IObjectsFactory
 	{
-		public object CreateInstance(System.Type type)
+        public object CreateInstance(System.Type type)
 		{
-			return Activator.CreateInstance(type);
+            object instance = NHibernate.Cfg.Environment.BytecodeProvider.BytecodeProviderInterceptor.CreateInstance(type);
+             if (instance == null)
+             {
+                 return Activator.CreateInstance(type);
+             }
+             return instance;
 		}
 
 		public object CreateInstance(System.Type type, bool nonPublic)
 		{
-			return Activator.CreateInstance(type, nonPublic);
+            object instance = NHibernate.Cfg.Environment.BytecodeProvider.BytecodeProviderInterceptor.CreateInstance(type, nonPublic);
+            if (instance == null)
+            {
+                return Activator.CreateInstance(type, nonPublic);
+            }
+            return instance;
 		}
 
 		public object CreateInstance(System.Type type, params object[] ctorArgs)
 		{
-			return Activator.CreateInstance(type, ctorArgs);
+            object instance = NHibernate.Cfg.Environment.BytecodeProvider.BytecodeProviderInterceptor.CreateInstance(type, ctorArgs);
+            if (instance == null)
+            {
+                return Activator.CreateInstance(type, ctorArgs);
+            }
+            return instance;
 		}
 	}
 }

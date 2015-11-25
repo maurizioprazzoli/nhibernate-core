@@ -4,12 +4,15 @@ using System.Security;
 using System.Security.Permissions;
 using NHibernate.Properties;
 using NHibernate.Util;
+using NHibernate.Bytecode;
 
 namespace NHibernate.Bytecode.Lightweight
 {
+  
 	public class ReflectionOptimizer : IReflectionOptimizer, IInstantiationOptimizer
 	{
-		private readonly IAccessOptimizer accessOptimizer;
+        private IBytecodeProviderInterceptor bytecodeProviderInterceptor = NHibernate.Cfg.Environment.BytecodeProvider.BytecodeProviderInterceptor;
+        private readonly IAccessOptimizer accessOptimizer;
 		private readonly CreateInstanceInvoker createInstanceMethod;
 		protected readonly System.Type mappedType;
 		private readonly System.Type typeOfThis;
@@ -26,7 +29,12 @@ namespace NHibernate.Bytecode.Lightweight
 
 		public virtual object CreateInstance()
 		{
-			return createInstanceMethod != null ? createInstanceMethod() : null;
+            object instance = bytecodeProviderInterceptor.CreateInstance(mappedType);
+            if (instance == null)
+            {
+                return createInstanceMethod != null ? createInstanceMethod() : null;
+            }
+            return instance;
 		}
 
 		/// <summary>

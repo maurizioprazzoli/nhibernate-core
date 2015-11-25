@@ -92,9 +92,11 @@
     <Compile Include="AdoNet\MySqlClientBatchingBatcher.cs" />
     <Compile Include="AdoNet\MySqlClientBatchingBatcherFactory.cs" />
     <Compile Include="AdoNet\MySqlClientSqlCommandSet.cs" />
-    <Compile Include="AssemblyInfo.cs" />
     <Compile Include="AssertionFailure.cs" />
     <Compile Include="Bytecode\DefaultProxyFactoryFactory.cs" />
+    <Compile Include="Bytecode\EmptyBytecodeProviderInterceptor.cs" />
+    <Compile Include="Bytecode\IBytecodeProviderInterceptor.cs" />
+    <Compile Include="Bytecode\IInjectableBytecodeProviderInterceptorClass.cs" />
     <Compile Include="Cache\Access\ISoftLock.cs" />
     <Compile Include="Cache\CachedItem.cs" />
     <Compile Include="Cache\CacheException.cs" />

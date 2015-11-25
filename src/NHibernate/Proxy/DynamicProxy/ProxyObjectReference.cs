@@ -43,7 +43,15 @@ namespace NHibernate.Proxy.DynamicProxy
 
 			// Initialize the proxy with the deserialized data
 			var args = new object[] {info, context};
-			_proxy = (IProxy) Activator.CreateInstance(proxyType, args);
+            object instance = NHibernate.Cfg.Environment.BytecodeProvider.BytecodeProviderInterceptor.CreateInstance(proxyType, args);
+            if (instance != null)
+            {
+                _proxy = (IProxy)instance;
+            }
+            else
+            {
+                _proxy = (IProxy)Activator.CreateInstance(proxyType, args);
+            }
 		}
 
 		#region IObjectReference Members

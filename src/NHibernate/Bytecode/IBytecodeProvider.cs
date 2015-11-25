@@ -44,5 +44,7 @@ namespace NHibernate.Bytecode
 		// <returns> The appropriate ClassTransformer. </returns>
 		// Not ported
 		//ClassTransformer getTransformer(ClassFilter classFilter, FieldFilter fieldFilter);
+
+        IBytecodeProviderInterceptor BytecodeProviderInterceptor { get; }
 	}
 }

@@ -6,6 +6,7 @@
 
 #endregion
 
+using NHibernate.Bytecode;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,8 @@ namespace NHibernate.Proxy.DynamicProxy
 
 		private static readonly MethodInfo addValue = typeof (SerializationInfo).GetMethod("AddValue", BindingFlags.Public | BindingFlags.Instance, null,
 																						   new[] {typeof (string), typeof (object)}, null);
+
+        private IBytecodeProviderInterceptor bytecodeProviderInterceptor = NHibernate.Cfg.Environment.BytecodeProvider.BytecodeProviderInterceptor;
 
 		public ProxyFactory()
 			: this(new DefaultyProxyMethodBuilder()) {}
@@ -56,12 +59,17 @@ namespace NHibernate.Proxy.DynamicProxy
 
 		public object CreateProxy(System.Type instanceType, IInterceptor interceptor, params System.Type[] baseInterfaces)
 		{
-			System.Type proxyType = CreateProxyType(instanceType, baseInterfaces);
-			object result = Activator.CreateInstance(proxyType);
-			var proxy = (IProxy) result;
-			proxy.Interceptor = interceptor;
+            System.Type proxyType = CreateProxyType(instanceType, baseInterfaces);
 
-			return result;
+            object result = bytecodeProviderInterceptor.CreateProxyInstance(proxyType);
+            if (result == null)
+            {
+                result = Activator.CreateInstance(proxyType);
+            }
+
+            var proxy = (IProxy)result;
+            proxy.Interceptor = interceptor;
+            return result;
 		}
 
 		public System.Type CreateProxyType(System.Type baseType, params System.Type[] interfaces)
@@ -84,6 +92,9 @@ namespace NHibernate.Proxy.DynamicProxy
 					// Cache the proxy type
 					if (proxyType != null && Cache != null)
 						Cache.StoreProxyType(proxyType, baseType, baseInterfaces);
+
+                    //Call intercept for notify create type
+                    bytecodeProviderInterceptor.ProxyTypeCreated(proxyType);
 				}
 
 				return proxyType;
